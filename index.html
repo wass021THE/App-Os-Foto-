@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>OS por Foto v2</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0f5c4d">
+<link rel="icon" href="icon.svg">
+<style>
+:root{--bg:#f4f6f5;--card:#fff;--fg:#17201d;--mut:#5d6b66;--line:#d9e0dd;--acc:#0f5c4d;--acc2:#e7f2ef;--warn:#9a5b00;--warnbg:#fff4e0;--err:#a3261c;--ok:#1d6b35}
+@media (prefers-color-scheme:dark){:root{--bg:#101614;--card:#18201d;--fg:#e6ece9;--mut:#9aa8a3;--line:#2b3632;--acc:#5fc4a8;--acc2:#1d2e29;--warn:#f0b259;--warnbg:#2e2414;--err:#ff8a7d;--ok:#7fd69a;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:max(12px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) 90px max(14px,env(safe-area-inset-left))}
+header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:12px}
+h1{font-size:19px;margin:0}
+h2{font-size:16px;margin:0 0 8px}
+.net{font-size:12px;padding:3px 9px;border-radius:99px;background:var(--acc2);color:var(--acc)}
+.net.off{background:var(--warnbg);color:var(--warn)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+textarea{min-height:70px;resize:vertical}
+button{font:inherit;border:0;border-radius:10px;padding:11px 14px;background:var(--acc);color:#fff;font-weight:600;cursor:pointer}
+button.sec{background:var(--acc2);color:var(--acc)}
+button.warn{background:var(--warnbg);color:var(--warn)}
+button:disabled{opacity:.5}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>*{flex:1 1 auto}
+.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px;margin-top:8px}
+.thumbs div{position:relative}
+.thumbs img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;display:block}
+.thumbs span{position:absolute;left:4px;bottom:4px;background:#000a;color:#fff;font-size:11px;padding:1px 5px;border-radius:5px}
+.mut{color:var(--mut);font-size:13px}
+.st{font-size:12px;font-weight:600;padding:2px 8px;border-radius:99px;background:var(--acc2);color:var(--acc);white-space:nowrap}
+.st.rasc{background:var(--warnbg);color:var(--warn)}
+.st.erro{background:var(--warnbg);color:var(--err)}
+.item{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item b{display:block}
+.etapa{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px}
+.grid3{display:grid;grid-template-columns:1.3fr 1fr 1fr;gap:6px}
+.rec{background:var(--err)!important;color:#fff!important}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;gap:6px;padding:8px max(10px,env(safe-area-inset-left)) max(8px,env(safe-area-inset-bottom));background:var(--card);border-top:1px solid var(--line)}
+nav button{flex:1;background:transparent;color:var(--mut);padding:9px 4px;font-size:14px}
+nav button.on{background:var(--acc2);color:var(--acc)}
+.msg{white-space:pre-wrap;background:var(--bg);border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:14px}
+.hide{display:none!important}
+.chk{display:flex;gap:8px;align-items:flex-start;margin-top:8px}
+.chk input{width:auto;margin-top:3px}
+</style>
+</head>
+<body>
+<header><h1>OS por Foto <small class="mut">v2</small></h1><span id="net" class="net">online</span></header>
+
+<!-- NOVA OS -->
+<section id="vNova">
+  <div class="card">
+    <h2>Nova OS</h2>
+    <div class="row">
+      <button id="bFoto">📷 Tirar / escolher fotos</button>
+    </div>
+    <input id="iFoto" type="file" accept="image/*" multiple class="hide">
+    <div id="thumbs" class="thumbs"></div>
+    <label>Relato por voz (opcional)</label>
+    <div class="row"><button id="bAudio" class="sec">🎤 Gravar relato</button><span id="audioInfo" class="mut"></span></div>
+    <audio id="audioPrev" controls class="hide" style="width:100%;margin-top:6px"></audio>
+    <label for="iTag">TAG (se souber)</label>
+    <input id="iTag" list="dlTag" placeholder="ex.: R-TH01">
+    <datalist id="dlTag"></datalist>
+    <label for="iNota">Observação escrita (opcional)</label>
+    <textarea id="iNota" placeholder="O que foi visto e feito"></textarea>
+    <div class="row" style="margin-top:12px"><button id="bSalvar">Salvar OS</button></div>
+    <p class="mut">Funciona sem internet: a OS fica guardada no celular. A análise pela IA e o envio acontecem quando a conexão voltar.</p>
+  </div>
+</section>
+
+<!-- FILA -->
+<section id="vFila" class="hide">
+  <div class="card"><h2>Minhas OS</h2><div id="lista"></div></div>
+</section>
+
+<!-- REVISAR -->
+<section id="vRev" class="hide"></section>
+
+<!-- CONFIG -->
+<section id="vCfg" class="hide">
+  <div class="card">
+    <h2>Configuração</h2>
+    <label for="cTec">Técnico</label>
+    <select id="cTec"></select>
+    <label for="cKey">Chave da API do Gemini</label>
+    <input id="cKey" type="password" autocomplete="off" placeholder="AIza...">
+    <label for="cModel">Modelo do Gemini</label>
+    <input id="cModel" value="gemini-2.5-flash">
+    <label for="cUrl">Endereço da planilha (Apps Script /exec)</label>
+    <input id="cUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    <label for="cTok">Senha do app (a mesma do Apps Script)</label>
+    <input id="cTok" type="password" autocomplete="off">
+    <label for="cWa">WhatsApp de teste (com DDI e DDD, só números)</label>
+    <input id="cWa" inputmode="numeric" value="558694458434">
+    <div class="row" style="margin-top:12px"><button id="bCfg">Salvar configuração</button></div>
+    <p class="mut">A chave e a senha ficam só neste celular.</p>
+  </div>
+</section>
+
+<nav>
+  <button data-v="vNova" class="on">Nova</button>
+  <button data-v="vFila">Fila <span id="nFila"></span></button>
+  <button data-v="vCfg">Config.</button>
+</nav>
+
+<script src="catalogo.js"></script>
+<script>
+(() => {
+"use strict";
+const $ = s => document.querySelector(s);
+const EQUIPE = { "Elétrica": ["F. Amadeu","Wanderson","Marcones","Leandro","Wilame"], "Mecânica": ["Wilson","Diego","Júlio Sérgio","Marcos Gonçalo","Aparecido"] };
+const espDe = t => Object.keys(EQUIPE).find(k => EQUIPE[k].includes(t)) || "";
+const LS = k => { try { return localStorage.getItem("osf2_" + k) || ""; } catch { return ""; } };
+const LSset = (k, v) => { try { localStorage.setItem("osf2_" + k, v); } catch {} };
+const cfg = () => ({ tec: LS("tec"), key: LS("key"), model: LS("model") || "gemini-2.5-flash", url: LS("url"), tok: LS("tok"), wa: LS("wa") || "558694458434" });
+const p2 = n => String(n).padStart(2, "0");
+const fData = t => { const d = new Date(t); return `${p2(d.getDate())}/${p2(d.getMonth()+1)}/${d.getFullYear()}`; };
+const fHora = t => { const d = new Date(t); return `${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+const iso = t => { const d = new Date(t); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`; };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+
+/* ---------- IndexedDB (fila local, funciona offline) ---------- */
+let dbp;
+function idb() {
+  return dbp ||= new Promise((res, rej) => {
+    const r = indexedDB.open("osfoto2", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("os", { keyPath: "id" });
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function tx(mode, fn) { const d = await idb(); return new Promise((res, rej) => { const t = d.transaction("os", mode); const s = t.objectStore("os"); const r = fn(s); t.oncomplete = () => res(r && r.result); t.onerror = () => rej(t.error); }); }
+const putOS = o => tx("readwrite", s => s.put(o));
+const getOS = id => tx("readonly", s => s.get(id));
+const allOS = () => tx("readonly", s => s.getAll());
+const delOS = id => tx("readwrite", s => s.delete(id));
+
+/* ---------- imagens e áudio ---------- */
+async function compress(file, max = 1280, q = 0.78) {
+  const bmp = await createImageBitmap(file);
+  const k = Math.min(1, max / Math.max(bmp.width, bmp.height));
+  const c = document.createElement("canvas"); c.width = Math.round(bmp.width * k); c.height = Math.round(bmp.height * k);
+  c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
+  return await new Promise(r => c.toBlob(r, "image/jpeg", q));
+}
+const b64 = blob => new Promise(r => { const f = new FileReader(); f.onload = () => r(String(f.result).split(",")[1]); f.readAsDataURL(blob); });
+
+let draft = { fotos: [], audio: null };
+function renderThumbs() {
+  const el = $("#thumbs"); el.innerHTML = "";
+  draft.fotos.forEach((f, i) => { const d = document.createElement("div"); const u = URL.createObjectURL(f.blob); d.innerHTML = `<img src="${u}" alt="Foto ${i+1}"><span>${i+1} · ${fHora(f.when)}</span>`; d.onclick = () => { if (confirmInline(d)) { draft.fotos.splice(i, 1); renderThumbs(); } }; el.appendChild(d); });
+}
+function confirmInline(d) { if (d.dataset.arm) return true; d.dataset.arm = 1; d.querySelector("span").textContent = "toque p/ remover"; setTimeout(() => { delete d.dataset.arm; renderThumbs(); }, 2500); return false; }
+$("#bFoto").onclick = () => $("#iFoto").click();
+$("#iFoto").onchange = async e => {
+  const files = [...e.target.files]; e.target.value = "";
+  for (const f of files) { try { draft.fotos.push({ blob: await compress(f), when: f.lastModified || Date.now() }); } catch { toast("Não consegui ler uma das fotos."); } }
+  draft.fotos.sort((a, b) => a.when - b.when); renderThumbs();
+};
+
+let rec = null, chunks = [];
+$("#bAudio").onclick = async () => {
+  if (rec && rec.state === "recording") { rec.stop(); return; }
+  try {
+    const st = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const mt = ["audio/webm;codecs=opus", "audio/mp4", "audio/webm"].find(m => window.MediaRecorder && MediaRecorder.isTypeSupported(m)) || "";
+    rec = new MediaRecorder(st, mt ? { mimeType: mt } : undefined); chunks = [];
+    rec.ondataavailable = ev => chunks.push(ev.data);
+    rec.onstop = () => { st.getTracks().forEach(t => t.stop()); const bl = new Blob(chunks, { type: (rec.mimeType || "audio/webm").split(";")[0] }); draft.audio = bl; const a = $("#audioPrev"); a.src = URL.createObjectURL(bl); a.classList.remove("hide"); $("#bAudio").textContent = "🎤 Regravar relato"; $("#bAudio").classList.remove("rec"); $("#audioInfo").textContent = `${Math.round(bl.size / 1024)} KB gravados`; };
+    rec.start(); $("#bAudio").textContent = "⏹ Parar gravação"; $("#bAudio").classList.add("rec"); $("#audioInfo").textContent = "gravando…";
+  } catch { toast("Microfone não liberado. Permita o microfone para este site nas configurações do navegador."); }
+};
+
+$("#bSalvar").onclick = async () => {
+  if (!draft.fotos.length && !draft.audio && !$("#iNota").value.trim()) { toast("Adicione fotos, um áudio ou uma observação."); return; }
+  const c = cfg(); if (!c.tec) { toast("Escolha o técnico em Config."); show("vCfg"); return; }
+  const o = { id: uid(), criadoEm: Date.now(), tecnico: c.tec, tag: $("#iTag").value.trim().toUpperCase(), nota: $("#iNota").value.trim(), fotos: draft.fotos, audio: draft.audio, etapa: "rascunho", ia: null };
+  await putOS(o);
+  draft = { fotos: [], audio: null }; renderThumbs(); $("#iTag").value = ""; $("#iNota").value = ""; $("#audioPrev").classList.add("hide"); $("#audioInfo").textContent = ""; $("#bAudio").textContent = "🎤 Gravar relato";
+  toast(navigator.onLine ? "OS salva. Analisando…" : "OS salva no celular. Será analisada quando houver internet.");
+  show("vFila"); if (navigator.onLine) analisar(o.id);
+};
+
+/* ---------- Gemini ---------- */
+function promptOS(o) {
+  const maq = CAT.maq.map(m => `${m.t} | ${m.n} | ${m.s}`).join("\n");
+  const fotos = o.fotos.map((f, i) => `Foto ${i + 1}: ${fData(f.when)} ${fHora(f.when)}`).join("\n") || "(sem fotos)";
+  return `Você é planejador de manutenção da fábrica de ração Atlântica-PI (Altos-PI). O técnico ${o.tecnico} (${espDe(o.tecnico)}) registrou um serviço. Monte a ORDEM DE SERVIÇO para o sistema SIGMA.
+
+Fotos anexadas (na ordem, com data/hora):
+${fotos}
+${o.audio ? "Há um ÁUDIO do técnico anexado: transcreva fielmente em \"transcricao\" e use como relato principal.\n" : ""}TAG informada: ${o.tag || "(nenhuma)"}
+Observação escrita: ${o.nota ? '"' + o.nota + '"' : "(nenhuma)"}
+
+IDENTIFIQUE A MÁQUINA por placas, etiquetas de TAG, textos em painéis/CCM, ou pelo relato, usando SOMENTE uma TAG desta lista (TAG | nome | setor). Se nenhuma servir, deixe "tag" vazio e descreva em "equipamentoDescrito".
+${maq}
+
+CAMPOS DO SIGMA — escolha exatamente um item de cada lista:
+setor: ${CAT.setor.join(" ; ")}
+tipo: ${CAT.tipo.join(" ; ")}
+sintoma: ${CAT.sint.join(" ; ")}
+prioridade: ${CAT.pri.join(" ; ")}
+area: ${CAT.area.join(" ; ")}
+
+REGRAS
+- Só o que está nas fotos, no áudio ou na observação. Não invente peças, valores, causas ou ações.
+- Leia valores de visores exatamente, com unidade.
+- "descricao": curta, maiúsculas, "SINTOMA - o que houve" (até 100 caracteres).
+- "etapas": 1 a 4 fases reais do serviço em ordem; cada "descricao" com no máximo 250 caracteres, sem repetir frases: componente/TAG; o que foi encontrado ou feito (verbo de ação); "causa" na etapa de diagnóstico; valores medidos com unidade; resultado. "fotos" = números das fotos da etapa.
+- "afetaProducao": "Sim" só se a máquina parou ou a produção foi afetada; então "horasParadas" = estimativa em horas pelo relato ou pelo intervalo das fotos, com a base em "paradaBase". Senão 0.
+- "situacao": "Pendente" se o serviço ficou incompleto ou falta peça; senão "Concluída".
+- "whatsapp": aviso para o grupo da manutenção. Linha 1: título curto (equipamento ou local, sem TAG técnica se houver nome comum). Linhas seguintes: 2 a 3 frases simples e claras do que foi encontrado e do que foi feito, sem emoji, sem assinatura. Exemplo: "Extensão da equipe Humany\\nOs plugues antigos estavam gastos e com o fio escurecido (risco de mau contato). Trocamos os 2 plugues por modelos novos com aterramento e revisamos as tomadas. Extensão liberada para uso."
+- "pontosAConfirmar": o que o técnico deve conferir antes do envio.
+
+Responda somente com JSON:
+{"transcricao":"","tag":"","tagFonte":"placa|etiqueta|painel|informada|relato|nenhuma","equipamentoDescrito":"","setor":"","area":"","tipo":"","sintoma":"","prioridade":"","descricao":"","solicitacao":"","etapas":[{"titulo":"","descricao":"","fotos":[1]}],"causa":"","solucao":"","medicoes":[{"grandeza":"","valor":"","unidade":""}],"materiais":[""],"afetaProducao":"Não","horasParadas":0,"paradaBase":"","situacao":"Concluída","confianca":"alta|média|baixa","pontosAConfirmar":[""],"whatsapp":""}`;
+}
+async function gemini(o) {
+  const c = cfg(); if (!c.key) throw new Error("Falta a chave do Gemini em Config.");
+  const parts = [{ text: promptOS(o) }];
+  for (const f of o.fotos) parts.push({ inline_data: { mime_type: "image/jpeg", data: await b64(f.blob) } });
+  if (o.audio) parts.push({ inline_data: { mime_type: o.audio.type || "audio/webm", data: await b64(o.audio) } });
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model)}:generateContent?key=${encodeURIComponent(c.key)}`;
+  for (let t = 0; t < 3; t++) {
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ role: "user", parts }], generationConfig: { responseMimeType: "application/json", temperature: 0.2 } }) });
+    if (r.status === 429 || r.status === 503) { await new Promise(s => setTimeout(s, 20000 * (t + 1))); continue; }
+    const j = await r.json();
+    if (!r.ok) throw new Error(j?.error?.message || "Erro " + r.status);
+    const txt = j?.candidates?.[0]?.content?.parts?.map(p => p.text || "").join("") || "";
+    return JSON.parse(txt.replace(/^```json\s*|```$/g, ""));
+  }
+  throw new Error("Limite gratuito do Gemini atingido agora. Tente de novo em alguns minutos.");
+}
+function horarios(o, ia) {
+  const fs = o.fotos; const base = fs.length ? fs[0].when : o.criadoEm;
+  const et = (ia.etapas || []).map(e => ({ ...e }));
+  et.forEach((e, i) => {
+    const idx = (e.fotos || []).map(n => n - 1).filter(n => fs[n]);
+    const ini = idx.length ? fs[Math.min(...idx)].when : (i ? et[i - 1]._fim : base);
+    let fim = idx.length ? fs[Math.max(...idx)].when + 10 * 60000 : ini + 30 * 60000;
+    e._ini = ini; e._fim = fim;
+  });
+  et.forEach((e, i) => { if (et[i + 1] && et[i + 1]._ini > e._ini) e._fim = Math.min(e._fim, et[i + 1]._ini); e.data = iso(e._ini); e.ini = fHora(Math.floor(e._ini / 300000) * 300000); e.fim = fHora(Math.ceil(e._fim / 300000) * 300000); delete e._ini; delete e._fim; });
+  return et;
+}
+const ocupados = new Set();
+async function analisar(id) {
+  if (ocupados.has(id)) return; ocupados.add(id);
+  try {
+    const o = await getOS(id); if (!o || o.etapa !== "rascunho") return;
+    o.etapa = "analisando"; await putOS(o); renderLista();
+    const ia = await gemini(o); ia.etapas = horarios(o, ia);
+    o.ia = ia; o.etapa = "revisar"; o.erro = ""; await putOS(o);
+  } catch (e) { const o = await getOS(id); if (o) { o.etapa = "rascunho"; o.erro = String(e.message || e); await putOS(o); } }
+  finally { ocupados.delete(id); renderLista(); }
+}
+
+/* ---------- Revisão ---------- */
+async function abrirRev(id) {
+  const o = await getOS(id); if (!o?.ia) return; const a = o.ia;
+  const opt = (arr, v) => arr.map(x => `<option ${x === v ? "selected" : ""}>${esc(x)}</option>`).join("");
+  $("#vRev").innerHTML = `<div class="card">
+    <h2>Revisar antes de enviar</h2>
+    ${a.transcricao ? `<label>Transcrição do áudio</label><div class="msg">${esc(a.transcricao)}</div>` : ""}
+    ${(a.pontosAConfirmar || []).filter(Boolean).length ? `<p class="mut"><b>Conferir:</b> ${esc(a.pontosAConfirmar.filter(Boolean).join(" · "))}</p>` : ""}
+    <label>TAG</label><input id="rTag" list="dlTag" value="${esc(a.tag || o.tag)}">
+    ${a.equipamentoDescrito ? `<p class="mut">${esc(a.equipamentoDescrito)}</p>` : ""}
+    <label>Descrição (SIGMA)</label><input id="rDesc" maxlength="100" value="${esc(a.descricao)}">
+    <label>Solicitação</label><textarea id="rSol">${esc(a.solicitacao)}</textarea>
+    <label>Tipo</label><select id="rTipo">${opt(CAT.tipo, a.tipo)}</select>
+    <label>Prioridade</label><select id="rPri">${opt(CAT.pri, a.prioridade)}</select>
+    <label>Horas trabalhadas (etapas)</label><div id="rEt"></div>
+    <button class="sec" id="rAddEt" style="margin-top:8px">+ etapa</button>
+    <label>Causa</label><textarea id="rCausa">${esc(a.causa)}</textarea>
+    <label>Solução</label><textarea id="rSolu">${esc(a.solucao)}</textarea>
+    <label>Materiais (um por linha)</label><textarea id="rMat">${esc((a.materiais || []).filter(Boolean).join("\n"))}</textarea>
+    <label>Afeta produção?</label><select id="rAfeta"><option ${a.afetaProducao !== "Sim" ? "selected" : ""}>Não</option><option ${a.afetaProducao === "Sim" ? "selected" : ""}>Sim</option></select>
+    <div id="rParadaBox"><label>Horas de máquina parada (ex.: 1,5)</label><input id="rParada" inputmode="decimal" value="${a.horasParadas ? String(a.horasParadas).replace(".", ",") : ""}">
+      ${a.paradaBase ? `<p class="mut">Base da estimativa: ${esc(a.paradaBase)}</p>` : ""}
+      <div class="chk"><input type="checkbox" id="rParadaOk"><label for="rParadaOk" style="margin:0">Confirmo o tempo de parada</label></div></div>
+    <label>Situação</label><select id="rSit">${opt(["Concluída", "Pendente"], a.situacao)}</select>
+    <label>Aviso para o WhatsApp</label><textarea id="rWa" style="min-height:110px">${esc(a.whatsapp)}</textarea>
+    <div class="row" style="margin-top:14px"><button class="sec" id="rVolta">Voltar</button><button id="rOk">Confirmar e pôr na fila</button></div>
+  </div>`;
+  let et = (a.etapas || []).map(e => ({ ...e }));
+  const drawEt = () => { $("#rEt").innerHTML = et.map((e, i) => `<div class="etapa"><div class="grid3"><input type="date" data-i="${i}" data-k="data" value="${e.data || ""}"><input type="time" data-i="${i}" data-k="ini" value="${e.ini || ""}"><input type="time" data-i="${i}" data-k="fim" value="${e.fim || ""}"></div><textarea maxlength="250" data-i="${i}" data-k="descricao" style="margin-top:6px">${esc(e.descricao)}</textarea><div class="row"><span class="mut" data-c="${i}">${(e.descricao || "").length}/250</span><button class="warn" data-del="${i}" style="flex:0">remover</button></div></div>`).join(""); };
+  drawEt();
+  $("#rEt").oninput = ev => { const t = ev.target; if (t.dataset.k) { et[+t.dataset.i][t.dataset.k] = t.value; if (t.dataset.k === "descricao") $(`[data-c="${t.dataset.i}"]`).textContent = `${t.value.length}/250`; } };
+  $("#rEt").onclick = ev => { const d = ev.target.dataset.del; if (d !== undefined) { et.splice(+d, 1); drawEt(); } };
+  $("#rAddEt").onclick = () => { const l = et[et.length - 1]; et.push({ titulo: "", descricao: "", data: l?.data || iso(Date.now()), ini: l?.fim || "", fim: "" }); drawEt(); };
+  const syncParada = () => $("#rParadaBox").classList.toggle("hide", $("#rAfeta").value !== "Sim");
+  $("#rAfeta").onchange = syncParada; syncParada();
+  $("#rVolta").onclick = () => show("vFila");
+  $("#rOk").onclick = async () => {
+    const afeta = $("#rAfeta").value; const hp = parseFloat(($("#rParada").value || "0").replace(",", "."));
+    if (afeta === "Sim" && (!(hp > 0) || !$("#rParadaOk").checked)) { toast("Máquina parada: informe e confirme as horas paradas."); return; }
+    if (!et.length || et.some(e => !e.data || !e.ini || !e.fim || !e.descricao.trim())) { toast("Preencha data, início, fim e descrição de cada etapa."); return; }
+    Object.assign(o.ia, { tag: $("#rTag").value.trim().toUpperCase(), descricao: $("#rDesc").value.trim(), solicitacao: $("#rSol").value.trim(), tipo: $("#rTipo").value, prioridade: $("#rPri").value, causa: $("#rCausa").value.trim(), solucao: $("#rSolu").value.trim(), materiais: $("#rMat").value.split("\n").map(s => s.trim()).filter(Boolean), afetaProducao: afeta, horasParadas: afeta === "Sim" ? hp : 0, paradaFonte: afeta === "Sim" ? "tecnico-confirmou" : "", situacao: $("#rSit").value, whatsapp: $("#rWa").value.trim(), etapas: et });
+    o.etapa = "pronta"; await putOS(o); toast("OS na fila de envio."); show("vFila"); sincronizar();
+  };
+  show("vRev");
+}
+
+/* ---------- Envio para a planilha (fila do lançamento no SIGMA) ---------- */
+async function enviar(o) {
+  const c = cfg(); if (!c.url || !c.tok) throw new Error("Falta o endereço da planilha ou a senha em Config.");
+  const fotos = []; for (const f of o.fotos) fotos.push({ when: f.when, b64: await b64(f.blob) });
+  const payload = { acao: "nova", token: c.tok, os: { id: o.id, criadoEm: o.criadoEm, tecnico: o.tecnico, especialidade: espDe(o.tecnico), tagInformada: o.tag, nota: o.nota, ...o.ia }, fotos };
+  const r = await fetch(c.url, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+  const j = await r.json(); if (!j.ok) throw new Error(j.erro || "Falha no envio");
+}
+let sincronizando = false;
+async function sincronizar() {
+  if (sincronizando || !navigator.onLine) return; sincronizando = true;
+  try {
+    for (const o of await allOS()) {
+      if (o.etapa === "rascunho" && !o.erro) analisar(o.id);
+      if (o.etapa === "pronta") { try { await enviar(o); o.etapa = "enviada"; o.erro = ""; o.enviadaEm = Date.now(); } catch (e) { o.erro = String(e.message || e); } await putOS(o); }
+    }
+    await atualizarStatus();
+  } finally { sincronizando = false; renderLista(); }
+}
+async function atualizarStatus() {
+  const c = cfg(); if (!c.url || !c.tok || !c.tec) return;
+  try {
+    const r = await fetch(`${c.url}?acao=status&token=${encodeURIComponent(c.tok)}&tec=${encodeURIComponent(c.tec)}`); const j = await r.json(); if (!j.ok) return;
+    for (const s of j.lista || []) { const o = await getOS(s.id); if (o && (o.sigma !== s.sigma || o.situacaoSigma !== s.status)) { o.sigma = s.sigma; o.situacaoSigma = s.status; await putOS(o); } }
+  } catch {}
+}
+
+/* ---------- WhatsApp ---------- */
+function textoWa(o) { const n = o.sigma ? `OS ${o.sigma}` : "OS (em abertura)"; const [t, ...r] = (o.ia?.whatsapp || "").split("\n"); return `${n} – ${t || o.ia?.descricao || ""}\n${r.join("\n").trim()}`.trim(); }
+async function whatsapp(id, teste) {
+  const o = await getOS(id); const txt = textoWa(o);
+  if (teste) { window.open(`https://wa.me/${cfg().wa.replace(/\D/g, "")}?text=${encodeURIComponent(txt)}`, "_blank"); return; }
+  const files = o.fotos.slice(0, 3).map((f, i) => new File([f.blob], `OS_foto${i + 1}.jpg`, { type: "image/jpeg" }));
+  if (navigator.canShare && navigator.canShare({ files })) { try { await navigator.share({ files, text: txt }); return; } catch (e) { if (e.name === "AbortError") return; } }
+  window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`, "_blank");
+}
+
+/* ---------- Lista ---------- */
+const ROT = { rascunho: ["aguardando IA", "rasc"], analisando: ["analisando…", ""], revisar: ["revisar", "rasc"], pronta: ["na fila de envio", ""], enviada: ["na fila do SIGMA", ""] };
+async function renderLista() {
+  const L = (await allOS()).sort((a, b) => b.criadoEm - a.criadoEm);
+  $("#nFila").textContent = L.filter(o => o.etapa !== "enviada").length || "";
+  $("#lista").innerHTML = L.length ? L.map(o => {
+    let [r, cl] = ROT[o.etapa] || [o.etapa, ""]; if (o.etapa === "enviada" && o.sigma) r = `SIGMA ${o.sigma} · ${o.situacaoSigma || "lançada"}`; if (o.erro) cl = "erro";
+    const tit = o.ia?.descricao || o.tag || o.nota.slice(0, 60) || "OS sem título";
+    return `<div class="item"><div><b>${esc(tit)}</b><span class="mut">${fData(o.criadoEm)} ${fHora(o.criadoEm)} · ${o.fotos.length} foto(s)${o.audio ? " · áudio" : ""}</span>${o.erro ? `<div class="mut" style="color:var(--err)">${esc(o.erro)}</div>` : ""}
+      <div class="row" style="margin-top:6px">
+        ${o.etapa === "rascunho" ? `<button class="sec" data-a="ia" data-id="${o.id}">Analisar</button>` : ""}
+        ${o.etapa === "revisar" ? `<button data-a="rev" data-id="${o.id}">Revisar</button>` : ""}
+        ${["pronta", "enviada"].includes(o.etapa) && o.ia?.whatsapp ? `<button class="sec" data-a="wa" data-id="${o.id}">WhatsApp</button><button class="sec" data-a="wat" data-id="${o.id}">Teste p/ mim</button>` : ""}
+        ${o.etapa !== "enviada" ? `<button class="warn" data-a="del" data-id="${o.id}">Excluir</button>` : ""}
+      </div></div><span class="st ${cl}">${r}</span></div>`;
+  }).join("") : `<p class="mut">Nenhuma OS ainda.</p>`;
+}
+$("#lista").onclick = async e => {
+  const b = e.target.closest("button"); if (!b) return; const id = b.dataset.id;
+  if (b.dataset.a === "ia") { const o = await getOS(id); o.erro = ""; await putOS(o); navigator.onLine ? analisar(id) : toast("Sem internet agora."); }
+  if (b.dataset.a === "rev") abrirRev(id);
+  if (b.dataset.a === "wa") whatsapp(id, false);
+  if (b.dataset.a === "wat") whatsapp(id, true);
+  if (b.dataset.a === "del") { if (b.dataset.arm) { await delOS(id); renderLista(); } else { b.dataset.arm = 1; b.textContent = "Confirmar exclusão"; } }
+};
+
+/* ---------- navegação, config, rede ---------- */
+function show(v) { ["vNova", "vFila", "vRev", "vCfg"].forEach(x => $("#" + x).classList.toggle("hide", x !== v)); document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.v === v)); if (v === "vFila") renderLista(); window.scrollTo(0, 0); }
+document.querySelectorAll("nav button").forEach(b => b.onclick = () => show(b.dataset.v));
+function toast(t) { const d = document.createElement("div"); d.textContent = t; d.style.cssText = "position:fixed;left:14px;right:14px;bottom:78px;background:#17201d;color:#fff;padding:12px;border-radius:10px;z-index:9;font-size:14px"; document.body.appendChild(d); setTimeout(() => d.remove(), 3800); }
+$("#cTec").innerHTML = `<option value="">— escolha —</option>` + Object.entries(EQUIPE).map(([k, v]) => `<optgroup label="${k}">${v.map(n => `<option>${n}</option>`).join("")}</optgroup>`).join("");
+const c0 = cfg(); $("#cTec").value = c0.tec; $("#cKey").value = c0.key; $("#cModel").value = c0.model; $("#cUrl").value = c0.url; $("#cTok").value = c0.tok; $("#cWa").value = c0.wa;
+$("#bCfg").onclick = () => { LSset("tec", $("#cTec").value); LSset("key", $("#cKey").value.trim()); LSset("model", $("#cModel").value.trim() || "gemini-2.5-flash"); LSset("url", $("#cUrl").value.trim()); LSset("tok", $("#cTok").value.trim()); LSset("wa", $("#cWa").value.replace(/\D/g, "")); toast("Configuração salva."); show("vNova"); sincronizar(); };
+$("#dlTag").innerHTML = CAT.maq.map(m => `<option value="${esc(m.t)}">${esc(m.n)}</option>`).join("");
+const net = () => { const on = navigator.onLine; $("#net").textContent = on ? "online" : "offline"; $("#net").classList.toggle("off", !on); if (on) sincronizar(); };
+addEventListener("online", net); addEventListener("offline", net); net();
+if (!c0.tec || !c0.key) show("vCfg");
+setInterval(() => navigator.onLine && sincronizar(), 120000);
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+})();
+</script>
+</body>
+</html>
