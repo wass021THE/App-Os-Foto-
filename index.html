@@ -229,7 +229,10 @@ async function gemini(o) {
   if (o.audio) parts.push({ inline_data: { mime_type: o.audio.type || "audio/webm", data: await b64(o.audio) } });
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model)}:generateContent?key=${encodeURIComponent(c.key)}`;
   for (let t = 0; t < 3; t++) {
-    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ role: "user", parts }], generationConfig: { responseMimeType: "application/json", temperature: 0.2 } }) });
+    const ac = new AbortController(); const tm = setTimeout(() => ac.abort(), 100000);
+    let r; try { r = await fetch(url, { method: "POST", signal: ac.signal, headers: { "Content-Type": "application/json" }, body: JSON.stringify({ contents: [{ role: "user", parts }], generationConfig: { responseMimeType: "application/json", temperature: 0.2 } }) }); }
+    catch (e) { if (e.name === "AbortError") throw new Error("O Gemini demorou mais de 100 segundos. Toque em Analisar para tentar de novo."); throw e; }
+    finally { clearTimeout(tm); }
     if (r.status === 429 || r.status === 503) { await new Promise(s => setTimeout(s, 20000 * (t + 1))); continue; }
     const j = await r.json();
     if (!r.ok) throw new Error(j?.error?.message || "Erro " + r.status);
@@ -355,7 +358,7 @@ async function renderLista() {
     const tit = o.ia?.descricao || o.tag || o.nota.slice(0, 60) || "OS sem título";
     return `<div class="item"><div><b>${esc(tit)}</b><span class="mut">${fData(o.criadoEm)} ${fHora(o.criadoEm)} · ${o.fotos.length} foto(s)${o.audio ? " · áudio" : ""}</span>${o.erro ? `<div class="mut" style="color:var(--err)">${esc(o.erro)}</div>` : ""}
       <div class="row" style="margin-top:6px">
-        ${o.etapa === "rascunho" ? `<button class="sec" data-a="ia" data-id="${o.id}">Analisar</button>` : ""}
+        ${o.etapa === "rascunho" || (o.etapa === "analisando" && !ocupados.has(o.id)) ? `<button class="sec" data-a="ia" data-id="${o.id}">Analisar</button>` : ""}
         ${o.etapa === "revisar" ? `<button data-a="rev" data-id="${o.id}">Revisar</button>` : ""}
         ${["pronta", "enviada"].includes(o.etapa) && o.ia?.whatsapp ? `<button class="sec" data-a="wa" data-id="${o.id}">WhatsApp</button><button class="sec" data-a="wat" data-id="${o.id}">Teste p/ mim</button>` : ""}
         ${o.etapa !== "enviada" ? `<button class="warn" data-a="del" data-id="${o.id}">Excluir</button>` : ""}
@@ -364,7 +367,7 @@ async function renderLista() {
 }
 $("#lista").onclick = async e => {
   const b = e.target.closest("button"); if (!b) return; const id = b.dataset.id;
-  if (b.dataset.a === "ia") { const o = await getOS(id); o.erro = ""; await putOS(o); navigator.onLine ? analisar(id) : toast("Sem internet agora."); }
+  if (b.dataset.a === "ia") { const o = await getOS(id); o.erro = ""; o.etapa = "rascunho"; await putOS(o); navigator.onLine ? analisar(id) : toast("Sem internet agora."); }
   if (b.dataset.a === "rev") abrirRev(id);
   if (b.dataset.a === "wa") whatsapp(id, false);
   if (b.dataset.a === "wat") whatsapp(id, true);
@@ -380,7 +383,7 @@ const c0 = cfg(); $("#cTec").value = c0.tec; $("#cKey").value = c0.key; $("#cMod
 $("#bCfg").onclick = () => { LSset("tec", $("#cTec").value); LSset("key", $("#cKey").value.trim()); LSset("model", $("#cModel").value.trim() || "gemini-2.5-flash"); LSset("url", $("#cUrl").value.trim()); LSset("tok", $("#cTok").value.trim()); LSset("wa", $("#cWa").value.replace(/\D/g, "")); toast("Configuração salva."); show("vNova"); sincronizar(); };
 $("#dlTag").innerHTML = CAT.maq.map(m => `<option value="${esc(m.t)}">${esc(m.n)}</option>`).join("");
 const net = () => { const on = navigator.onLine; $("#net").textContent = on ? "online" : "offline"; $("#net").classList.toggle("off", !on); if (on) sincronizar(); };
-addEventListener("online", net); addEventListener("offline", net); net();
+addEventListener("online", net); addEventListener("offline", net); (async () => { for (const o of await allOS()) if (o.etapa === "analisando") { o.etapa = "rascunho"; o.erro = ""; await putOS(o); } net(); })();
 if (!c0.tec || !c0.key) show("vCfg");
 setInterval(() => navigator.onLine && sincronizar(), 120000);
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

@@ -1,5 +1,5 @@
 // Guarda o app no celular para abrir sem internet.
-const V = "osf2-v1";
+const V = "osf2-v2";
 const ARQ = ["./", "index.html", "catalogo.js", "manifest.webmanifest", "icon.svg"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(V).then(c => c.addAll(ARQ))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== V).map(k => caches.delete(k))))); self.clients.claim(); });
