@@ -261,7 +261,7 @@ async function analisar(id) {
     o.etapa = "analisando"; await putOS(o); renderLista();
     const ia = await gemini(o); ia.etapas = horarios(o, ia);
     o.ia = ia; o.etapa = "revisar"; o.erro = ""; await putOS(o);
-  } catch (e) { const o = await getOS(id); if (o) { o.etapa = "rascunho"; o.erro = String(e.message || e); await putOS(o); } }
+  } catch (e) { const o = await getOS(id); if (o) { o.etapa = "rascunho"; o.erro = "[Gemini] " + (/failed to fetch|networkerror|load failed/i.test(String(e.message)) ? "Sem conexão com o Google (rede, VPN, bloqueador ou Wi-Fi da fábrica). Tente com dados móveis." : String(e.message || e)); await putOS(o); } }
   finally { ocupados.delete(id); renderLista(); }
 }
 
@@ -325,7 +325,7 @@ async function sincronizar() {
   try {
     for (const o of await allOS()) {
       if (o.etapa === "rascunho" && !o.erro) analisar(o.id);
-      if (o.etapa === "pronta") { try { await enviar(o); o.etapa = "enviada"; o.erro = ""; o.enviadaEm = Date.now(); } catch (e) { o.erro = String(e.message || e); } await putOS(o); }
+      if (o.etapa === "pronta") { try { await enviar(o); o.etapa = "enviada"; o.erro = ""; o.enviadaEm = Date.now(); } catch (e) { o.erro = "[Planilha] " + (/failed to fetch|networkerror|load failed/i.test(String(e.message)) ? "Sem conexão com a planilha. Confira o endereço /exec em Config. e se a implantação está como Qualquer pessoa." : String(e.message || e)); } await putOS(o); }
     }
     await atualizarStatus();
   } finally { sincronizando = false; renderLista(); }
